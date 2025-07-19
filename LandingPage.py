@@ -1,11 +1,11 @@
 import streamlit as st
-import AddingUser
+import AddingUser, ActualsByMonth
 import ActualsVsForecast
 import UpdatingActualsWithFilter
 
 # ---- Sidebar Navigation ----
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ["Home", "Add User", "Actuals Vs Forecast", "Update Actuals", "Settings"])
+page = st.sidebar.radio("Go to", ["Home", "Add User", "Actuals Vs Forecast", "Update Actuals", "Actuals By Month", "Settings"])
 
 # ---- Page Routing Logic ----
 if page == "Home":
@@ -26,6 +26,12 @@ elif page == "Update Actuals":
     #st.title("📊 Visualize Data")
     #st.write("View dynamic charts like Forecast vs Actual comparisons.")
     UpdatingActualsWithFilter.show_page()
+
+
+elif page == "Actuals By Month":
+    #st.title("📊 Visualize Data")
+    #st.write("View dynamic charts like Forecast vs Actual comparisons.")
+    ActualsByMonth.show_page()
 
 elif page == "Settings":
     st.title("⚙️ Settings")
