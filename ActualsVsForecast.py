@@ -2,67 +2,94 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-
 def show_page():
-
-    # Load the Excel file
+# Load Excel
     excel_file = "BaseDatasheet.xlsx"
     sheet_name = "Sheet1"
-
-    # Read the data
     df = pd.read_excel(excel_file, sheet_name=sheet_name)
 
     st.title("📁 Forecast vs Actuals by Project")
 
-    # Extract month options
+    # Extract valid months
     month_options = []
     for col in df.columns:
         if "Actuals" in col:
-            month = col.split()[0]
-            forecast_col = f"{month} Forecast"
-            if forecast_col in df.columns:
-                month_options.append(month)
+            m = col.split()[0]
+            if f"{m} Forecast" in df.columns:
+                month_options.append(m)
 
-    # Month selector
-    selected_month = st.selectbox("Select a month", month_options)
-
-    # Project selector
+    # Select project
     project_names = df["Project Name"].dropna().unique()
     selected_project = st.selectbox("Select a project", project_names)
-
-    # Filter data for selected project
     project_data = df[df["Project Name"] == selected_project]
 
-    # Get relevant columns
-    actual_col = f"{selected_month} Actuals"
-    forecast_col = f"{selected_month} Forecast"
+    # Select months
+    st.markdown("### 🗓️ Select Months for Comparison")
+    selected_months = []
+    cols = st.columns(4)
+    for i, m in enumerate(month_options):
+        with cols[i % 4]:
+            if st.checkbox(m, key=f"month_{m}"):
+                selected_months.append(m)
 
-    # Display comparison
-    st.subheader(f"📊 {selected_month} Forecast vs Actuals for Project: {selected_project}")
-    if not project_data.empty:
-        actual = project_data[actual_col].sum() if actual_col in project_data else 0
-        forecast = project_data[forecast_col].sum() if forecast_col in project_data else 0
+    # Show chart
+    if selected_months and not project_data.empty:
+        st.subheader(f"📊 Actuals & Forecast per Month for {selected_project}")
 
-        # Create a DataFrame for chart
-        chart_df = pd.DataFrame({
-            "Metric": ["Forecast", "Actual"],
-            "Value": [forecast, actual],
-            "Color": ["#1f77b4", "#ff7f0e"]  # Blue for Forecast, Orange for Actual
-        })
+        chart_rows = []
+        label_order = []
 
-        # Show metrics
-        st.metric(label="Total Forecast", value=forecast)
-        st.metric(label="Total Actual", value=actual)
-        st.metric(label="Difference", value=actual - forecast)
+        for m in selected_months:
+            actual_col = f"{m} Actuals"
+            forecast_col = f"{m} Forecast"
+            actual = project_data[actual_col].sum() if actual_col in project_data else 0
+            forecast = project_data[forecast_col].sum() if forecast_col in project_data else 0
 
-        # Draw colored bar chart using Altair
-        chart = alt.Chart(chart_df).mark_bar().encode(
-            x=alt.X("Metric", title="Revenue Projected Vs Revenue Actual"),
-            y=alt.Y("Value", title="Dollars"),
-            color=alt.Color("Color", scale=None),  # Use custom colors
-            tooltip=["Metric", "Value"]
-        ).properties(width=400)
+            chart_rows.append({
+                "Month": m,
+                "Label": f"{m} - Actual",
+                "Metric": "Actual",
+                "Value": actual,
+                "ValueLabel": f"${actual:,.0f}"
+            })
+            chart_rows.append({
+                "Month": m,
+                "Label": f"{m} - Forecast",
+                "Metric": "Forecast",
+                "Value": forecast,
+                "ValueLabel": f"${forecast:,.0f}"
+            })
+            label_order.extend([f"{m} - Actual", f"{m} - Forecast"])
 
+        df_chart = pd.DataFrame(chart_rows)
+
+        # Bar chart layer
+        bars = alt.Chart(df_chart).mark_bar(size=20).encode(
+            y=alt.Y("Label:N", title="Month - Metric", sort=label_order),
+            x=alt.X("Value:Q", title="Amount"),
+            color=alt.Color("Metric:N", title="Type", scale=alt.Scale(
+                domain=["Forecast", "Actual"],
+                range=["#1f77b4", "#ff7f0e"]
+            )),
+            tooltip=["Month", "Metric", "ValueLabel"]
+        )
+
+        # Text layer inside the bars
+        labels = alt.Chart(df_chart).mark_text(
+            align='left',
+            baseline='middle',
+            dx=5,  # slight shift to the right for visibility
+            color='white'  # text inside the bar
+        ).encode(
+            y=alt.Y("Label:N", sort=label_order),
+            x=alt.X("Value:Q"),
+            text=alt.Text("ValueLabel:N")
+        )
+
+        chart = (bars + labels).properties(height=50 * len(label_order))
         st.altair_chart(chart, use_container_width=True)
+
+    elif not selected_months:
+        st.info("☝️ Please select one or more months.")
     else:
-        st.warning("No data found for the selected project.")
+        st.warning("⚠️ No data found for the selected project.")
