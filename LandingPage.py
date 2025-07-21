@@ -7,6 +7,8 @@ import AddingUser
 import ActualsVsForecast
 import UpdatingActualsWithFilter
 import ActualsByMonth
+import ForecastBillingHours
+import ForecastBillingCostCalculator
 
 # ---- Sidebar Navigation ----
 st.set_page_config(page_title="Revenue Dashboard", layout="wide")
@@ -17,6 +19,8 @@ page = st.sidebar.radio("Go to", [
     "Actuals Vs Forecast",
     "Update Actuals",
     "Actuals By Month",
+    "Forecast Billing Hours",
+    "Forecast Billing Cost Cal"
     "Settings"
 ])
 
@@ -133,6 +137,12 @@ elif page == "Update Actuals":
 
 elif page == "Actuals By Month":
     ActualsByMonth.show_page()
+
+elif page == "Forecast Billing Hours":
+    ForecastBillingHours.main()
+
+elif page == "Forecast Billing Cost Cal":
+    ForecastBillingCostCalculator.main()
 
 elif page == "Settings":
     st.title("⚙️ Settings")
