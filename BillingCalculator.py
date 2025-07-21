@@ -22,7 +22,7 @@ def show_page():
         return
 
     # Define months and calculate billing
-    months = ["Jan", "Feb", "March", "Apr", "May", "June"]
+    months = ["Jan", "Feb", "March", "April", "May", "June"]
     billing_rate = filtered_df["BillingRateByMonth"].values[0]
     results = []
 
