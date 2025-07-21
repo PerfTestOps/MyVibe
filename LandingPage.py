@@ -7,7 +7,11 @@ import plotly.graph_objects as go
 import AddingUser
 import ActualsVsForecast
 import UpdatingActualsWithFilter
+import UpdateForecast
 import ActualsByMonth
+import BillingCalculator
+import ForecastBillingHours
+import ForecastBillingCostCalculator
 
 # ---- Sidebar Navigation ----
 st.set_page_config(page_title="Revenue Dashboard", layout="wide")
@@ -17,7 +21,11 @@ page = st.sidebar.radio("Go to", [
     "Add User",
     "Actuals Vs Forecast",
     "Update Actuals",
+    "Update Forecast",
     "Actuals By Month",
+    "Billing Calculator",
+    "Forecast Billing Hours",
+    "Forecast Billing Cost Cal",
     "Settings"
 ])
 
@@ -131,8 +139,16 @@ elif page == "Actuals Vs Forecast":
     ActualsVsForecast.show_page()
 elif page == "Update Actuals":
     UpdatingActualsWithFilter.show_page()
+elif page == "Update Forecast":
+    UpdateForecast.show_page()
 elif page == "Actuals By Month":
     ActualsByMonth.show_page()
+elif page == "Billing Calculator":
+    BillingCalculator.show_page()
+elif page == "Forecast Billing Hours":
+    ForecastBillingHours.main()
+elif page == "Forecast Billing Cost Cal":
+    ForecastBillingCostCalculator.main()
 elif page == "Settings":
     st.title("⚙️ Settings")
     st.write("Control app preferences, theme options, or configuration.")
