@@ -96,7 +96,7 @@ def plot_billing_chart(combined_df: pd.DataFrame, months_to_forecast: int):
 
 
 def main():
-    st.set_page_config(page_title="Billing Forecast", layout="wide")
+    #st.set_page_config(page_title="Billing Forecast", layout="wide")
     st.title("💰 Workforce Billing Forecast")
 
     df = load_data("BaseDatasheet.xlsx")

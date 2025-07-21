@@ -90,7 +90,7 @@ def plot_forecast_chart(combined_df: pd.DataFrame, target: str, months_to_foreca
     st.plotly_chart(fig, use_container_width=True)
 
 def main():
-    st.set_page_config(page_title="Workforce Forecast Billing Hours", layout="wide")
+    #st.set_page_config(page_title="Workforce Forecast Billing Hours", layout="wide")
     st.title("📈 Workforce Forecast Calculator")
 
     # Load data
