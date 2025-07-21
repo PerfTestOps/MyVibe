@@ -7,6 +7,7 @@ import AddingUser
 import ActualsVsForecast
 import UpdatingActualsWithFilter
 import ActualsByMonth
+import BillingCalculator
 import ForecastBillingHours
 import ForecastBillingCostCalculator
 
@@ -19,8 +20,9 @@ page = st.sidebar.radio("Go to", [
     "Actuals Vs Forecast",
     "Update Actuals",
     "Actuals By Month",
+    "Billing Calculator",
     "Forecast Billing Hours",
-    "Forecast Billing Cost Cal"
+    "Forecast Billing Cost Cal",
     "Settings"
 ])
 
@@ -137,6 +139,9 @@ elif page == "Update Actuals":
 
 elif page == "Actuals By Month":
     ActualsByMonth.show_page()
+
+elif page == "Billing Calculator":
+    BillingCalculator.show_page()
 
 elif page == "Forecast Billing Hours":
     ForecastBillingHours.main()
