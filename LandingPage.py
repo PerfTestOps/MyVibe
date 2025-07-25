@@ -1,4 +1,7 @@
 import streamlit as st
+# ---- MUST BE FIRST STREAMLIT COMMAND ----
+st.set_page_config(page_title="Revenue Dashboard", layout="wide")
+
 import pandas as pd
 import altair as alt
 import plotly.graph_objects as go
@@ -9,12 +12,13 @@ import ActualsVsForecast
 import UpdatingActualsWithFilter
 import UpdateForecast
 import ActualsByMonth
+import ActualsByYear
 import BillingCalculator
 import ForecastBillingHours
 import ForecastBillingCostCalculator
+import ForecastResult
 
 # ---- Sidebar Navigation ----
-st.set_page_config(page_title="Revenue Dashboard", layout="wide")
 st.sidebar.title("📁 Navigation")
 page = st.sidebar.radio("Go to", [
     "Home",
@@ -23,9 +27,11 @@ page = st.sidebar.radio("Go to", [
     "Update Actuals",
     "Update Forecast",
     "Actuals By Month",
+    "Actuals By Year",
     "Billing Calculator",
     "Forecast Billing Hours",
     "Forecast Billing Cost Cal",
+    "Forecast Result",
     "Settings"
 ])
 
@@ -143,12 +149,16 @@ elif page == "Update Forecast":
     UpdateForecast.show_page()
 elif page == "Actuals By Month":
     ActualsByMonth.show_page()
+elif page == "Actuals By Year":
+    ActualsByYear.show_page()
 elif page == "Billing Calculator":
     BillingCalculator.show_page()
 elif page == "Forecast Billing Hours":
     ForecastBillingHours.main()
 elif page == "Forecast Billing Cost Cal":
     ForecastBillingCostCalculator.main()
+elif page == "Forecast Result":
+    ForecastResult.main()
 elif page == "Settings":
     st.title("⚙️ Settings")
     st.write("Control app preferences, theme options, or configuration.")
