@@ -20,6 +20,7 @@ page = st.sidebar.radio("Go to", [
     "Update Actuals",
     "Actuals By Month",
     "Actuals By Year",
+    "Revenue Trend by Year",
     "Settings"
 ])
 
@@ -141,7 +142,9 @@ elif page == "Actuals By Month":
     ActualsByMonth.show_page()
 elif page == "Actuals By Year":
     ActualsByYear.show_page()
-    #import ActualsByYear
+elif page == "Revenue Trend by Year":
+    #ActualsByYear.show_page()
+    import MonthByYear
 elif page == "Settings":
     st.title("⚙️ Settings")
     st.write("Control app preferences, theme options, or configuration.")
