@@ -8,16 +8,18 @@ import AddingUser
 import ActualsVsForecast
 import UpdatingActualsWithFilter
 import ActualsByMonth
+import ActualsByYear
 
 # ---- Sidebar Navigation ----
 #st.set_page_config(page_title="Revenue Dashboard", layout="wide")
 st.sidebar.title("📁 Navigation")
-page = st.sidebar.radio("Go to", [
+page = st.sidebar.radio("Go to", [  
     "Home",
     "Add User",
     "Actuals Vs Forecast",
     "Update Actuals",
     "Actuals By Month",
+    "Actuals By Year",
     "Settings"
 ])
 
@@ -137,6 +139,9 @@ elif page == "Update Actuals":
     UpdatingActualsWithFilter.show_page()
 elif page == "Actuals By Month":
     ActualsByMonth.show_page()
+elif page == "Actuals By Year":
+    ActualsByYear.show_page()
+    #import ActualsByYear
 elif page == "Settings":
     st.title("⚙️ Settings")
     st.write("Control app preferences, theme options, or configuration.")
