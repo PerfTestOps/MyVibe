@@ -46,4 +46,4 @@ if not st.session_state.authenticated:
             st.error("Invalid credentials. Please try again.")
 else:
     import LandingPage
-    st.switch_page("pages/LandingPage.py")
+    #st.switch_page("pages/LandingPage.py")
