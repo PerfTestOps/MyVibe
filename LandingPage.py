@@ -10,7 +10,7 @@ import UpdatingActualsWithFilter
 import ActualsByMonth
 
 # ---- Sidebar Navigation ----
-st.set_page_config(page_title="Revenue Dashboard", layout="wide")
+#st.set_page_config(page_title="Revenue Dashboard", layout="wide")
 st.sidebar.title("📁 Navigation")
 page = st.sidebar.radio("Go to", [
     "Home",
