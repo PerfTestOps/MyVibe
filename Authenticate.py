@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+import LandingPage
 
 st.set_page_config(page_title="Login", page_icon="🔐")
 
@@ -45,5 +45,5 @@ if not st.session_state.authenticated:
         else:
             st.error("Invalid credentials. Please try again.")
 else:
-    import LandingPage
-    #st.switch_page("pages/LandingPage.py")
+    LandingPage.showpage()
+    #st.switch_page("/LandingPage.py")
