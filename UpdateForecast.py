@@ -70,36 +70,46 @@ def show_page():
 
     st.title("🧠 Update Forecast Data")
 
+    # 🔍 Filter by Project Name
     project_filter = st.text_input("Filter by Project Name (Exact Match)", placeholder="Type exact project name")
     filtered_df = df[df["Project Name"] == project_filter] if project_filter else df.copy()
 
-    edited_df = st.data_editor(filtered_df, num_rows="fixed", use_container_width=True)
+    # 🔐 Role check
+    role = st.session_state.get("role", "Unknown")
 
-    if st.button("💾 Save Changes and Sync Forecasts"):
-        try:
-            wb = load_workbook(excel_file)
-            ws = wb[sheet_name]
+    if role == "Viewer":
+        # 📋 View-only table
+        st.info("🔒 Read-only access: Forecast data can be viewed but not edited.")
+        st.dataframe(filtered_df, use_container_width=True)
+    else:
+        # ✏️ Editable table for Admin/Contributor
+        edited_df = st.data_editor(filtered_df, num_rows="fixed", use_container_width=True)
 
-            # Safely update only the filtered rows
-            if project_filter:
-                updated_df = df.copy()
-                match_indices = updated_df[updated_df["Project Name"] == project_filter].index.tolist()
-                for i, idx in enumerate(match_indices):
-                    updated_df.loc[idx] = edited_df.iloc[i]
-            else:
-                updated_df = edited_df.copy()
+        # 💾 Save and Sync Forecasts
+        if st.button("💾 Save Changes and Sync Forecasts"):
+            try:
+                wb = load_workbook(excel_file)
+                ws = wb[sheet_name]
 
-            # Overwrite Sheet2
-            wb.remove(ws)
-            ws = wb.create_sheet(sheet_name)
-            ws.append(updated_df.columns.tolist())
-            for r in dataframe_to_rows(updated_df, index=False, header=False):
-                ws.append(r)
-            wb.save(excel_file)
+                if project_filter:
+                    updated_df = df.copy()
+                    match_indices = updated_df[updated_df["Project Name"] == project_filter].index.tolist()
+                    for i, idx in enumerate(match_indices):
+                        updated_df.loc[idx] = edited_df.iloc[i]
+                else:
+                    updated_df = edited_df.copy()
 
-            # Sync forecasts to Sheet1
-            sync_forecasts_to_sheet1_from_df(excel_file, updated_df)
+                # Overwrite Sheet2
+                wb.remove(ws)
+                ws = wb.create_sheet(sheet_name)
+                ws.append(updated_df.columns.tolist())
+                for r in dataframe_to_rows(updated_df, index=False, header=False):
+                    ws.append(r)
+                wb.save(excel_file)
 
-            st.success("✅ Forecast data saved and synced to Sheet1 successfully.")
-        except Exception as e:
-            st.error(f"❌ Save or sync failed: {e}")
+                # Sync forecasts to Sheet1
+                sync_forecasts_to_sheet1_from_df(excel_file, updated_df)
+
+                st.success("✅ Forecast data saved and synced to Sheet1 successfully.")
+            except Exception as e:
+                st.error(f"❌ Save or sync failed: {e}")

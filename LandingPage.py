@@ -4,6 +4,7 @@ import altair as alt
 import plotly.graph_objects as go
 
 import AddingUser
+import AddProject
 import ActualsVsForecast
 import UpdatingActualsWithFilter
 import UpdateForecast
@@ -14,15 +15,47 @@ def show_page():
     st.set_page_config(page_title="Revenue Dashboard", layout="wide")
     st.sidebar.title("📁 Navigation")
 
-    page = st.sidebar.radio("Go to", [
-        "Home",
-        "Add User",
-        "Actuals Vs Forecast",
-        "Update Actuals",
-        "Update Forecast",
-        "Actuals By Month",
-        "Actuals By Year"
-    ])
+    # Check authentication
+    if "authenticated" not in st.session_state or not st.session_state.authenticated:
+        st.error("🚫 You must be logged in to view this page.")
+        st.stop()
+
+    # Get role
+    role = st.session_state.get("role", "Unknown")
+
+    # Role-based menu
+    if role == "Admin":
+        page_options = [
+            "Home",
+            "Add User",
+            "Add Project",
+            "Actuals Vs Forecast",
+            "Update Actuals",
+            "Update Forecast",
+            "Actuals By Month",
+            "Actuals By Year"
+        ]
+    elif role == "Contributor":
+        page_options = [
+            "Home",
+            "Actuals Vs Forecast",
+            "Update Actuals",
+            "Update Forecast",
+            "Actuals By Month",
+            "Actuals By Year"
+        ]
+    elif role == "Viewer":
+        page_options = [
+            "Home",
+            "Actuals Vs Forecast",
+            "Actuals By Month",
+            "Actuals By Year"
+        ]
+    else:
+        page_options = ["Home"]
+
+    st.sidebar.caption(f"👤 Logged in as: {role}")
+    page = st.sidebar.radio("Go to", page_options)
 
     if page == "Home":
         st.title("🏠 Welcome to the Dashboard")
@@ -123,6 +156,8 @@ def show_page():
 
     elif page == "Add User":
         AddingUser.show_page()
+    elif page == "Add Project":
+        AddProject.show_page()
     elif page == "Actuals Vs Forecast":
         ActualsVsForecast.show_page()
     elif page == "Update Actuals":
