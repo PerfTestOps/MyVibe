@@ -1,28 +1,47 @@
 import streamlit as st
+# ---- MUST BE FIRST STREAMLIT COMMAND ----
+st.set_page_config(page_title="Revenue Dashboard", layout="wide")
+
 import pandas as pd
 import altair as alt
 import plotly.graph_objects as go
 
 # Modular pages
+import Authenticate
 import AddingUser
 import ActualsVsForecast
 import UpdatingActualsWithFilter
+import UpdateForecast
 import ActualsByMonth
 import ActualsByYear
 
+
+
 # ---- Sidebar Navigation ----
-#st.set_page_config(page_title="Revenue Dashboard", layout="wide")
 st.sidebar.title("📁 Navigation")
-page = st.sidebar.radio("Go to", [  
-    "Home",
-    "Add User",
-    "Actuals Vs Forecast",
-    "Update Actuals",
-    "Actuals By Month",
-    "Actuals By Year",
-    "Revenue Trend by Year",
-    "Settings"
-])
+
+# Initialize session state for authentication
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+    st.session_state.role = None
+    st.session_state.emp_id = None
+
+if not st.session_state.authenticated:
+    # Only show Authenticate page if not logged in
+    Authenticate.show_page()
+    st.stop()  # Prevents the rest of the app from running
+else:
+    # Show the rest of the app after login
+    page = st.sidebar.radio("Go to", [
+        "Home",
+        "Add User",
+        "Actuals Vs Forecast",
+        "Update Actuals",
+        "Update Forecast",
+        "Actuals By Month",
+        "Actuals By Year",
+        "Settings"
+    ])
 
 # ---- Page Routing ----
 if page == "Home":
@@ -32,14 +51,8 @@ if page == "Home":
     # 🔹 Load Data
     excel_file = "BaseDatasheet.xlsx"
     df = pd.read_excel(excel_file, sheet_name="Sheet1")
+    df = df[df["Active"].astype(str).str.lower() == "yes"]
 
-    # ✅ Handle missing 'Active' column gracefully
-    #if "Active" in df.columns:
-    #    df = df[df["Active"].astype(str).str.lower() == "yes"]
-    #else:
-    #   st.warning("⚠️ 'Active' column not found — showing all records.")
-
-    # 🎯 Calculate YTD Revenue
     actual_cols = [col for col in df.columns if "Actuals" in col]
     df[actual_cols] = df[actual_cols].fillna(0)
     df["Actuals_YTD"] = df[actual_cols].sum(axis=1)
@@ -74,6 +87,7 @@ if page == "Home":
             ).configure_view(stroke=None),
             use_container_width=True
         )
+
     with st.expander("📄 View Service Line Table"):
         st.dataframe(summary_df.sort_values("Actuals_YTD", ascending=False), use_container_width=True)
 
@@ -98,6 +112,7 @@ if page == "Home":
             ).configure_view(stroke=None),
             use_container_width=True
         )
+
     with st.expander("📄 View Region Table"):
         st.dataframe(region_df.sort_values("Actuals_YTD", ascending=False), use_container_width=True)
 
@@ -134,17 +149,18 @@ if page == "Home":
 # ---- Modular Pages ----
 elif page == "Add User":
     AddingUser.show_page()
+elif page == "Authenticate":
+    Authenticate.show_page()
 elif page == "Actuals Vs Forecast":
     ActualsVsForecast.show_page()
 elif page == "Update Actuals":
     UpdatingActualsWithFilter.show_page()
+elif page == "Update Forecast":
+    UpdateForecast.show_page()
 elif page == "Actuals By Month":
     ActualsByMonth.show_page()
 elif page == "Actuals By Year":
     ActualsByYear.show_page()
-elif page == "Revenue Trend by Year":
-    #ActualsByYear.show_page()
-    import MonthByYear
 elif page == "Settings":
     st.title("⚙️ Settings")
     st.write("Control app preferences, theme options, or configuration.")
