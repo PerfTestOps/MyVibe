@@ -33,7 +33,8 @@ def show_page():
             "Update Actuals",
             "Update Forecast",
             "Actuals By Month",
-            "Actuals By Year"
+            "Actuals By Year",
+            "Settings"
         ]
     elif role == "Contributor":
         page_options = [
@@ -42,14 +43,16 @@ def show_page():
             "Update Actuals",
             "Update Forecast",
             "Actuals By Month",
-            "Actuals By Year"
+            "Actuals By Year",
+            "Settings"
         ]
     elif role == "Viewer":
         page_options = [
             "Home",
             "Actuals Vs Forecast",
             "Actuals By Month",
-            "Actuals By Year"
+            "Actuals By Year",
+            "Settings"
         ]
     else:
         page_options = ["Home"]
@@ -168,3 +171,6 @@ def show_page():
         ActualsByMonth.show_page()
     elif page == "Actuals By Year":
         ActualsByYear.show_page()
+    elif page == "Settings":
+        st.title("⚙️ Settings")
+        st.write("Control app preferences, theme options, or configuration.")
