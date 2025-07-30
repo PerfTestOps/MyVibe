@@ -6,9 +6,13 @@ from datetime import datetime
 def show_page():
     st.title("👥 Add Associate to Revenue Tracker")
 
+    # 🔐 Role restriction
+    if st.session_state.get("role") == "Viewer":
+        st.warning("🚫 You don't have permission to add users. This section is restricted.")
+        st.stop()
+
     excel_file = "BaseDatasheet.xlsx"
 
-    # Dropdown options
     dropdown_options = {
         "vertical": ["BFS", "Insurance", "CMT", "HCLS", "Internal","PnR"],
         "sub_vertical": ["BFS", "Communication", "GPS", "Health Care", "Life Science","MLEU","RCG","T&H","Technology"],
@@ -25,7 +29,6 @@ def show_page():
         "methodology": ["Agile", "Waterfall", "Hybrid", "Scrum", "Kanban"]
     }
 
-    # Create workbook/sheets if missing
     if not os.path.exists(excel_file):
         wb = Workbook()
         sheet1 = wb.active
@@ -59,7 +62,7 @@ def show_page():
             sub_region = st.selectbox("Sub Region", dropdown_options["sub_region"])
             associate_id = st.text_input("Associate ID")
             associate_name = st.text_input("Associate Name")
-            onshore_offshore = st.selectbox("Onshore/Offshore", ["Onshore", "Offshore"])
+            onshore_offshore = st.selectbox("Onshore/Offshore", dropdown_options["onshore_offshore"])
             service_line = st.selectbox("Service Line", dropdown_options["service_line"])
 
         with col2:
@@ -94,5 +97,3 @@ def show_page():
             sheet2.append(row_data)
             wb.save(excel_file)
             st.success(f"✅ Associate '{associate_name}' added successfully to both sheets!")
-
-#show_page()
