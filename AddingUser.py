@@ -2,6 +2,7 @@ import streamlit as st
 from openpyxl import Workbook, load_workbook
 import os
 from datetime import datetime
+import pandas as pd
 
 def show_page():
     st.title("👥 Add Associate to Revenue Tracker")
@@ -14,21 +15,21 @@ def show_page():
     excel_file = "BaseDatasheet.xlsx"
 
     dropdown_options = {
-        "vertical": ["BFS", "Insurance", "CMT", "HCLS", "Internal","PnR"],
-        "sub_vertical": ["BFS", "Communication", "GPS", "Health Care", "Life Science","MLEU","RCG","T&H","Technology"],
-        "region": ["Americas", "APAC", "APJ", "EMEA","GGM"],
-        "sub_region": ["ANZ", "APAC", "ASEAN", "DACH", "GGM", "Germany","India","Japan","NA","Northern Europe","Southern Europe & Middle East","Switzerland","UK","UK&I"],
+        "vertical": ["BFS", "Insurance", "CMT", "HCLS", "Internal", "PnR"],
+        "sub_vertical": ["BFS", "Communication", "GPS", "Health Care", "Life Science", "MLEU", "RCG", "T&H", "Technology"],
+        "region": ["Americas", "APAC", "APJ", "EMEA", "GGM"],
+        "sub_region": ["ANZ", "APAC", "ASEAN", "DACH", "GGM", "Germany", "India", "Japan", "NA", "Northern Europe", "Southern Europe & Middle East", "Switzerland", "UK", "UK&I"],
         "service_line": ["AT", "PE", "PT", "SDET", "SRE", "ST", "UT"],
         "bl_ml": ["BL", "ML"],
         "specifics": ["Frontend", "Backend", "Fullstack", "Test Automation", "Data Analytics"],
-        "project_type": ["Managed Service", "Staff Augmentation", "Development", "QA", "T&M",   
-                       "Fixed Price", "Support","Consulting", "Training","FBT", "Transaction Based"],
+        "project_type": ["Managed Service", "Staff Augmentation", "Development", "QA", "T&M", "Fixed Price", "Support", "Consulting", "Training", "FBT", "Transaction Based"],
         "onshore_offshore": ["Onshore", "Offshore"],
         "digital": ["Digital", "Non-Digital"],
         "digital_category": ["Experience", "Intelligence", "Engineering", "Modernization"],
         "methodology": ["Agile", "Waterfall", "Hybrid", "Scrum", "Kanban"]
     }
 
+    # 🧩 Initialize workbook if not exists
     if not os.path.exists(excel_file):
         wb = Workbook()
         sheet1 = wb.active
@@ -50,14 +51,33 @@ def show_page():
     sheet1 = wb["Sheet1"]
     sheet2 = wb["Sheet2"]
 
+    # 📊 Load AdminWorks sheet
+    try:
+        admin_df = pd.read_excel(excel_file, sheet_name="AdminWorks", engine="openpyxl")
+        parent_customers = sorted(admin_df["Parent customer"].dropna().unique())
+    except Exception as e:
+        st.error(f"⚠️ Could not load AdminWorks sheet: {e}")
+        parent_customers = []
+        admin_df = pd.DataFrame()
+
+    # ✅ Reactive Parent Customer & Project Description dropdowns
+    parent_customer = st.selectbox("Parent Customer", parent_customers)
+
+    if parent_customer and not admin_df.empty:
+        filtered_df = admin_df[admin_df["Parent customer"] == parent_customer]
+        project_descriptions = sorted(filtered_df["Project description"].dropna().unique())
+    else:
+        project_descriptions = []
+
+    project_description = st.selectbox("Project Description", project_descriptions)
+
+    # 🧾 Form
     with st.form("add_user_form"):
         col1, col2 = st.columns(2)
 
         with col1:
             vertical = st.selectbox("Vertical", dropdown_options["vertical"])
             sub_vertical = st.selectbox("Sub Vertical", dropdown_options["sub_vertical"])
-            parent_customer = st.text_input("Parent Customer")
-            project_description = st.text_input("Project Description")
             region = st.selectbox("Region", dropdown_options["region"])
             sub_region = st.selectbox("Sub Region", dropdown_options["sub_region"])
             associate_id = st.text_input("Associate ID")
@@ -79,6 +99,7 @@ def show_page():
 
         submitted = st.form_submit_button("Submit")
 
+    # 📝 Save data
     if submitted:
         existing_ids = [str(row[6].value) for row in sheet1.iter_rows(min_row=2) if row[6].value]
 

@@ -10,6 +10,7 @@ import UpdatingActualsWithFilter
 import UpdateForecast
 import ActualsByMonth
 import ActualsByYear
+import MonthByYearOnYear
 
 def show_page():
     st.set_page_config(page_title="Revenue Dashboard", layout="wide")
@@ -34,6 +35,7 @@ def show_page():
             "Update Forecast",
             "Actuals By Month",
             "Actuals By Year",
+            "MonthByYearOnYear",
             "Settings"
         ]
     elif role == "Contributor":
@@ -44,6 +46,7 @@ def show_page():
             "Update Forecast",
             "Actuals By Month",
             "Actuals By Year",
+            "MonthByYearOnYear",
             "Settings"
         ]
     elif role == "Viewer":
@@ -52,6 +55,7 @@ def show_page():
             "Actuals Vs Forecast",
             "Actuals By Month",
             "Actuals By Year",
+            "MonthByYearOnYear",
             "Settings"
         ]
     else:
@@ -171,6 +175,8 @@ def show_page():
         ActualsByMonth.show_page()
     elif page == "Actuals By Year":
         ActualsByYear.show_page()
+    elif page == "Month By Year On Year":
+        MonthByYearOnYear.show_page()
     elif page == "Settings":
         st.title("⚙️ Settings")
         st.write("Control app preferences, theme options, or configuration.")

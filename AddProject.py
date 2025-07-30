@@ -1,8 +1,6 @@
-# AddProject.py
-
 import streamlit as st
+import pandas as pd
 from openpyxl import load_workbook
-from openpyxl.utils import get_column_letter
 
 # --- Security Check ---
 def is_admin():
@@ -10,83 +8,85 @@ def is_admin():
 
 # --- Excel Configuration ---
 excel_path = "BaseDatasheet.xlsx"
-sheet1_name = "Sheet1"
-sheet2_name = "Sheet2"
+target_sheet = "AdminWorks"
 
-def get_header_map(ws):
-    return {cell.value: idx+1 for idx, cell in enumerate(ws[1]) if cell.value}
-
-def build_row_from_headers(ws, user_data):
-    header_map = get_header_map(ws)
-    total_cols = ws.max_column
-    row = [""] * total_cols
-
-    for field, value in user_data.items():
-        if field in header_map:
-            row[header_map[field] - 1] = value
-
-    return row
-
-def add_project_to_sheets(user_data):
+# --- Add Project Row ---
+def add_project_to_adminworks(parent_customer, project_description):
     book = load_workbook(excel_path)
 
-    # --- Sheet1 ---
-    if sheet1_name in book.sheetnames:
-        ws1 = book[sheet1_name]
-        row1 = build_row_from_headers(ws1, user_data)
-        ws1.append(row1)
-    else:
-        raise Exception("Sheet1 not found.")
+    if target_sheet not in book.sheetnames:
+        raise Exception(f"Sheet '{target_sheet}' not found in workbook.")
 
-    # --- Sheet2 ---
-    if sheet2_name in book.sheetnames:
-        ws2 = book[sheet2_name]
-        row2 = build_row_from_headers(ws2, user_data)
-        ws2.append(row2)
-    else:
-        raise Exception("Sheet2 not found.")
+    ws = book[target_sheet]
+    headers = [cell.value for cell in ws[1]]
+    row = [""] * len(headers)
 
+    if "Parent customer" in headers:
+        idx = headers.index("Parent customer")
+        row[idx] = parent_customer
+    if "Project description" in headers:
+        idx = headers.index("Project description")
+        row[idx] = project_description
+
+    ws.append(row)
     book.save(excel_path)
 
-# --- UI Page ---
+# --- Read Sheet as DataFrame ---
+def load_adminworks_df():
+    return pd.read_excel(excel_path, sheet_name=target_sheet, engine="openpyxl")
+
+# --- Delete Row by Index ---
+def delete_entry(row_index):
+    book = load_workbook(excel_path)
+    ws = book[target_sheet]
+    ws.delete_rows(row_index + 2)  # +2 accounts for header row + 0-based index
+    book.save(excel_path)
+
+# --- Main UI Page ---
 def show_page():
-    st.title("👷 Admin: Add New Project")
+    st.title("🛠️ Admin: Add or Manage Projects")
     st.markdown("---")
 
     if not is_admin():
-        st.warning("🚫 You do not have permission to add new projects.")
+        st.warning("🚫 You do not have permission to access this page.")
         st.stop()
 
+    # --- Add New Project Form ---
     with st.form("add_project_form"):
-        project_name = st.text_input("Project Name")
-        associate_id = st.text_input("Associate ID")
-        associate_name = st.text_input("Associate Name")
         parent_customer = st.text_input("Parent Customer")
-        description = st.text_area("Project Description")
-        region = st.selectbox("Region", ["North America", "EU", "APAC", "India"])
-        service_line = st.text_input("Service Line")
-        status = st.selectbox("Active", ["Yes", "No"])
-        start_date = st.date_input("Start Date")
+        project_description = st.text_area("Project Description", height=100)
+        submitted = st.form_submit_button("➕ Add Project")
 
-        submitted = st.form_submit_button("Add Project")
+    if submitted:
+        try:
+            add_project_to_adminworks(parent_customer, project_description)
+            st.success("✅ Project added to AdminWorks successfully.")
+        except Exception as e:
+            st.error(f"⚠️ Failed to add project: {e}")
 
-        if submitted:
-            user_data = {
-                "Project Name": project_name,
-                "AssociateID": associate_id,
-                "AssociateName": associate_name,
-                "Parent Customer": parent_customer,
-                "Project description": description,
-                "Region": region,
-                "ServiceLine": service_line,
-                "Service Line": service_line,  # if Sheet2 uses different spelling
-                "Active": status,
-                "Demand Start Date": start_date.strftime("%Y-%m-%d"),
-                "Resource Start Date": start_date.strftime("%Y-%m-%d"),
-            }
+    st.markdown("### 📄 Current Entries in AdminWorks")
+    try:
+        df = load_adminworks_df()
+        if df.empty:
+            st.info("No entries found.")
+        else:
+            st.dataframe(df, use_container_width=True)
 
-            try:
-                add_project_to_sheets(user_data)
-                st.success(f"✅ Project '{project_name}' added successfully to both sheets!")
-            except Exception as e:
-                st.error(f"⚠️ Error adding project: {e}")
+            st.markdown("### 🔧 Delete a Project Entry")
+            with st.form("delete_form"):
+                selected_index = st.number_input(
+                    "Enter row number to delete (starting from 0)",
+                    min_value=0,
+                    max_value=len(df) - 1,
+                    step=1
+                )
+                confirm_delete = st.form_submit_button("🗑️ Delete Entry")
+
+            if confirm_delete:
+                try:
+                    delete_entry(selected_index)
+                    st.success(f"✅ Entry at row {selected_index} deleted successfully.")
+                except Exception as e:
+                    st.error(f"⚠️ Failed to delete entry: {e}")
+    except Exception as e:
+        st.error(f"⚠️ Unable to read sheet: {e}")
