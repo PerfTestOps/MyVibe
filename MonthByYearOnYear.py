@@ -83,6 +83,3 @@ def show_page():
     with st.expander("📈 Summary Statistics"):
         summary = melted.groupby(["Vertical", "Year"])["Revenue"].sum().reset_index()
         st.dataframe(summary.style.format({"Revenue": "{:,.0f}"}))
-
-
-show_page()

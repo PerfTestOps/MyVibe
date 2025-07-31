@@ -11,13 +11,14 @@ import UpdateForecast
 import ActualsByMonth
 import ActualsByYear
 import MonthByYearOnYear
+import Common
 
 def show_page():
-    st.set_page_config(page_title="Revenue Dashboard", layout="wide")
+    # st.set_page_config(page_title="Revenue Dashboard", layout="wide")
     st.sidebar.title("📁 Navigation")
 
     # Check authentication
-    if "authenticated" not in st.session_state or not st.session_state.authenticated:
+    if not Common.is_authenticated():
         st.error("🚫 You must be logged in to view this page.")
         st.stop()
 
@@ -62,8 +63,10 @@ def show_page():
         page_options = ["Home"]
 
     st.sidebar.caption(f"👤 Logged in as: {role}")
-    page = st.sidebar.radio("Go to", page_options)
-
+    page = st.sidebar.radio("Go to", page_options, index=st.session_state.page)
+    #print('page', page)
+    Common.update_page_in_cookie(page_options.index(page))
+    
     if page == "Home":
         st.title("🏠 Welcome to the Dashboard")
         st.markdown("---")
