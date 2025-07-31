@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 def show_page():
-# --- Load Data ---
+    # --- Load Data ---
     df = pd.read_excel("BaseDatasheet.xlsx", sheet_name="MonthByYear", index_col=0)
     df = df.T.reset_index()
     df[['Vertical', 'Year']] = df['index'].str.split('-', expand=True)
@@ -21,24 +21,37 @@ def show_page():
     default_years = [y for y in [current_year, previous_year] if y in available_years]
 
     selected_years = st.sidebar.multiselect("Choose Years", available_years, default=default_years)
-    selected_verticals = st.sidebar.multiselect("Choose Verticals", df["Vertical"].unique(), default=df["Vertical"].unique())
 
-    month_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    # Horizontal checkboxes for Verticals with BFS preselected
+    st.sidebar.markdown("### Choose Verticals")
+    verticals = sorted(df["Vertical"].unique())
+    num_cols = 3
+    cols = st.sidebar.columns(num_cols)
+    selected_verticals = []
+
+    for idx, vertical in enumerate(verticals):
+        col = cols[idx % num_cols]
+        default_check = True if vertical == "BFS" else False
+        if col.checkbox(vertical, value=default_check):
+            selected_verticals.append(vertical)
+
+    month_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     month_map = {month: i+1 for i, month in enumerate(month_order)}
 
     month_columns = [col for col in df.columns if col not in ["Vertical", "Year"]]
-    default_months = [m for m in month_order if m in month_columns]  # Ensure correct order
+    default_months = [m for m in month_order if m in month_columns]
     selected_months = st.sidebar.multiselect("Choose Months", default_months, default=default_months)
 
     # --- Filter & Melt Data ---
     filtered_df = df[(df["Vertical"].isin(selected_verticals)) & (df["Year"].isin(selected_years))]
     melted = filtered_df.melt(id_vars=["Vertical", "Year"], value_vars=selected_months,
-                            var_name="Month", value_name="Revenue")
+                              var_name="Month", value_name="Revenue")
 
     melted["Month_Num"] = melted["Month"].map(month_map)
     melted = melted.sort_values("Month_Num")
     melted["Month"] = pd.Categorical(melted["Month"], categories=month_order, ordered=True)
+    melted["Legend_Key"] = melted["Vertical"] + " - " + melted["Year"]
 
     # --- Main Title ---
     st.title("📊 Revenue Trending Year on Year")
@@ -47,20 +60,20 @@ def show_page():
     base_chart = alt.Chart(melted).mark_line(point=True).encode(
         x=alt.X("Month:N", sort=month_order),
         y=alt.Y("Revenue:Q", title="Revenue ($)"),
-        color="Vertical:N",
-        strokeDash="Year:N",
+        color=alt.Color("Legend_Key:N", legend=alt.Legend(title="Vertical-Year")),
         tooltip=["Vertical", "Year", "Month", "Revenue"]
     ).properties(width=850, height=450)
 
     trend_lines = alt.Chart(melted).transform_regression(
-        "Month_Num", "Revenue", groupby=["Vertical", "Year"]
-    ).mark_line(strokeDash=[4,2], color="gray").encode(
+        "Month_Num", "Revenue", groupby=["Legend_Key"]
+    ).mark_line(strokeDash=[4, 2], color="gray").encode(
         x=alt.X("Month_Num:Q", axis=alt.Axis(
             title="Month",
-            values=list(range(1,13)),
+            values=list(range(1, 13)),
             labelExpr='["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][datum.value - 1]'
         )),
-        y="Revenue:Q"
+        y="Revenue:Q",
+        detail="Legend_Key:N"
     )
 
     # --- Combine & Display ---
@@ -70,3 +83,6 @@ def show_page():
     with st.expander("📈 Summary Statistics"):
         summary = melted.groupby(["Vertical", "Year"])["Revenue"].sum().reset_index()
         st.dataframe(summary.style.format({"Revenue": "{:,.0f}"}))
+
+
+show_page()
